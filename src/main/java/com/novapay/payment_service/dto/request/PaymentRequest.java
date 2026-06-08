@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public class PaymentRequest {
-
     @NotNull(message = "Payer wallet id is required")
     Long payerWalletId;
     @NotNull(message = "Payee wallet id is required")
