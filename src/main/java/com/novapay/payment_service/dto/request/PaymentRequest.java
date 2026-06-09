@@ -5,9 +5,13 @@ import com.novapay.payment_service.entity.enums.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Setter
+@Getter
 public class PaymentRequest {
     @NotNull(message = "Payer wallet id is required")
     Long payerWalletId;

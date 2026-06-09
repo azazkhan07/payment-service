@@ -8,11 +8,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface PaymentService {
 
-    PaymentResponse processPayment(PaymentRequest request);
+    PaymentResponse createPayment(PaymentRequest request);
 
-    PaymentResponse getPaymentByReference(String reference);
+    PaymentResponse getPaymentByReference(String paymentReference);
 
     Page<PaymentResponse> getAllPayments(Pageable pageable);
 
     Page<PaymentResponse> getPaymentsByStatus(PaymentStatus status, Pageable pageable);
+
+    PaymentResponse refundPayment(String paymentReference);
 }
