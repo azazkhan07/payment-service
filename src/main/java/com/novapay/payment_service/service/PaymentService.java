@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface PaymentService {
 
-    PaymentResponse createPayment(PaymentRequest request);
+    PaymentResponse createPayment(PaymentRequest request, String idempotencyKey);
 
     PaymentResponse getPaymentByReference(String paymentReference);
 
