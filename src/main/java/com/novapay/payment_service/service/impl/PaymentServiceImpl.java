@@ -16,6 +16,7 @@ import com.novapay.payment_service.exception.PaymentAlreadyProcessingException;
 import com.novapay.payment_service.exception.ResourceNotFoundException;
 import com.novapay.payment_service.kafka.producer.PaymentEventProducer;
 import com.novapay.payment_service.mapper.PaymentMapper;
+import com.novapay.payment_service.outbox.service.OutboxEventService;
 import com.novapay.payment_service.repository.PaymentIdempotencyRepository;
 import com.novapay.payment_service.repository.PaymentRepository;
 import com.novapay.payment_service.service.PaymentService;
@@ -40,8 +41,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentIdempotencyService paymentIdempotencyService;
     private final PaymentMapper paymentMapper;
     private final TransactionClient transactionClient;
-    private final PaymentEventProducer paymentEventProducer;
     private final WalletClient walletClient;
+    private final OutboxEventService outboxEventService;
 
     @Override
     @Transactional
@@ -85,13 +86,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // Create idempotency record before processing payment
-//        PaymentIdempotency idempotency = PaymentIdempotency.builder()
-//                .idempotencyKey(idempotencyKey)
-//                .requestHash(requestHash)
-//                .status(PaymentStatus.PENDING)
-//                .build();
-//        paymentIdempotencyRepository.save(idempotency);
-
         PaymentIdempotency idempotency;
 
         try {
@@ -171,7 +165,12 @@ public class PaymentServiceImpl implements PaymentService {
                         savedPayment.getMessage(),
                         savedPayment.getCreatedAt());
 
-        paymentEventProducer.publish(paymentCompletedEvent);
+        outboxEventService.saveEvent(
+                "PAYMENT",
+                savedPayment.getPaymentReference(),
+                "PAYMENT_COMPLETED",
+                paymentCompletedEvent
+        );
 
         LOGGER.info("Payment created successfully | paymentReference={} transactionReference={}",
                 savedPayment.getPaymentReference(),
