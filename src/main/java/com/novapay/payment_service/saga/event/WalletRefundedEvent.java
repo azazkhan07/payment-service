@@ -2,10 +2,8 @@ package com.novapay.payment_service.saga.event;
 
 import java.math.BigDecimal;
 
-public record TransactionCreatedEvent(
+public record WalletRefundedEvent(
         String paymentReference,
         Long payerWalletId,
-        Long payeeWalletId,
-        BigDecimal amount,
-        String transactionReference
+        BigDecimal amount
 ) { }

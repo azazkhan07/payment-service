@@ -34,7 +34,6 @@ public class Payment {
     private PaymentStatus status;
     private String remarks;
     private String message;
-    @Column(nullable = false)
     private String transactionReference;
     private LocalDateTime createdAt;
     @PrePersist

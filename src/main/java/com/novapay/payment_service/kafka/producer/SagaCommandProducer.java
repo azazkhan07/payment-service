@@ -3,6 +3,7 @@ package com.novapay.payment_service.kafka.producer;
 import com.novapay.payment_service.kafka.constants.KafkaTopics;
 import com.novapay.payment_service.saga.event.CreateTransactionCommand;
 import com.novapay.payment_service.saga.event.DebitWalletCommand;
+import com.novapay.payment_service.saga.event.WalletRefundCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ public class SagaCommandProducer {
 
     private final KafkaTemplate<String, DebitWalletCommand> walletKafkaTemplate;
     private final KafkaTemplate<String, CreateTransactionCommand> transactionKafkaTemplate;
+    private final KafkaTemplate<String, WalletRefundCommand> refundKafkaTemplate;
 
     public void debitWallet(DebitWalletCommand command) {
 
@@ -36,6 +38,17 @@ public class SagaCommandProducer {
 
         transactionKafkaTemplate.send(
                 KafkaTopics.TRANSACTION_COMMANDS,
+                command.paymentReference(),
+                command);
+    }
+
+    public void refundWallet(WalletRefundCommand command) {
+
+        log.info("Sending REFUND_WALLET command. Payment Reference: {}",
+                command.paymentReference());
+
+        refundKafkaTemplate.send(
+                KafkaTopics.WALLET_COMMANDS,
                 command.paymentReference(),
                 command);
     }

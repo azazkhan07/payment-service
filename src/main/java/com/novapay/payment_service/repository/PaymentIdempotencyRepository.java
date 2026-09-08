@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface PaymentIdempotencyRepository extends JpaRepository<PaymentIdempotency, Long> {
 
     Optional<PaymentIdempotency> findByIdempotencyKey(String idempotencyKey);
+
+    Optional<PaymentIdempotency> findByPaymentReference(String paymentReference);
+
 }

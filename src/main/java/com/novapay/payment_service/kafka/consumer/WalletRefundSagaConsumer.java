@@ -1,37 +1,28 @@
 package com.novapay.payment_service.kafka.consumer;
 
 import com.novapay.payment_service.kafka.constants.KafkaTopics;
-import com.novapay.payment_service.saga.event.WalletDebitedEvent;
 import com.novapay.payment_service.saga.event.WalletRefundedEvent;
 import com.novapay.payment_service.saga.service.PaymentSagaOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
-@KafkaListener(
-        topics = KafkaTopics.WALLET_EVENTS,
-        groupId = "payment-saga-group")
-public class WalletSagaConsumer {
+@Slf4j
+public class WalletRefundSagaConsumer {
 
     private final PaymentSagaOrchestrator paymentSagaOrchestrator;
 
-    @KafkaHandler
-    public void handleWalletDebited(WalletDebitedEvent event) {
+    @KafkaListener(
+            topics = KafkaTopics.WALLET_EVENTS,
+            groupId = "payment-saga-group")
 
-        log.info("Received WALLET_DEBITED event. Payment Reference: {}", event.paymentReference());
-
-        paymentSagaOrchestrator.handleWalletDebited(event);
-    }
-
-    @KafkaHandler
     public void handleWalletRefunded(WalletRefundedEvent event) {
 
-        log.info("Received WALLET_REFUNDED event. Payment Reference: {}", event.paymentReference());
+        log.info("Received WALLET_REFUNDED event. Payment Reference: {}",
+                event.paymentReference());
 
         paymentSagaOrchestrator.handleWalletRefunded(event);
     }

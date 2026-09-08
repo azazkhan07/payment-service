@@ -30,21 +30,18 @@ public class OutboxEventPublisher {
 
         for (OutboxEvent event : events) {
 
-            try {   PaymentCompletedEvent paymentEvent =
+            try {PaymentCompletedEvent paymentEvent =
                         objectMapper.readValue(
                                 event.getPayload(),
                                 PaymentCompletedEvent.class);
 
-                paymentEventProducer
-                        .publish(paymentEvent)
-                        .get(10, TimeUnit.SECONDS);
+                paymentEventProducer.publish(paymentEvent).get(10, TimeUnit.SECONDS);
 
                 event.setStatus("PROCESSED");
                 event.setProcessedAt(LocalDateTime.now());
 
                 outboxEventRepository.save(event);
-                log.info(
-                        "Outbox event processed successfully. Event ID: {}, Payment Reference: {}",
+                log.info("Outbox event processed successfully. Event ID: {}, Payment Reference: {}",
                         event.getId(),
                         event.getAggregateId());
             } catch (Exception e) {
