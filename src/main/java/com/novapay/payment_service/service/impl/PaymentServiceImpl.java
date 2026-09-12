@@ -1,6 +1,5 @@
 package com.novapay.payment_service.service.impl;
 
-import com.novapay.payment_service.client.TransactionClient;
 import com.novapay.payment_service.dto.request.PaymentRequest;
 import com.novapay.payment_service.dto.response.PaymentResponse;
 import com.novapay.payment_service.entity.Payment;
@@ -15,6 +14,7 @@ import com.novapay.payment_service.repository.PaymentRepository;
 import com.novapay.payment_service.saga.entity.PaymentSaga;
 import com.novapay.payment_service.saga.service.PaymentSagaOrchestrator;
 import com.novapay.payment_service.service.PaymentService;
+import com.novapay.payment_service.service.TransactionServiceClient;
 import com.novapay.payment_service.util.PaymentRequestHashUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -35,14 +35,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentIdempotencyRepository paymentIdempotencyRepository;
     private final PaymentIdempotencyService paymentIdempotencyService;
     private final PaymentMapper paymentMapper;
-    private final TransactionClient transactionClient;
+    private final TransactionServiceClient transactionServiceClient;
     private final PaymentSagaOrchestrator paymentSagaOrchestrator;
 
     @Override
     @Transactional
-    public PaymentResponse createPayment(
-            PaymentRequest request,
-            String idempotencyKey) {
+    public PaymentResponse createPayment(PaymentRequest request, String idempotencyKey) {
 
         LOGGER.info("Payment request received | payerWalletId={} payeeWalletId={} amount={}",
                 request.getPayerWalletId(),
@@ -101,11 +99,8 @@ public class PaymentServiceImpl implements PaymentService {
                     "A payment with this Idempotency-Key is currently being processed");
         }
 
-        /*
-         * Create payment in PENDING state.
-         *
-         * At this point the transaction reference does not exist yet.
-         */
+
+        // Create payment in PENDING state.At this point the transaction reference does not exist yet.
         Payment payment = Payment.builder()
                 .payerWalletId(request.getPayerWalletId())
                 .payeeWalletId(request.getPayeeWalletId())
@@ -119,18 +114,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        /*
-         * Connect idempotency record with payment reference.
-         */
+
+        // Connect idempotency record with payment reference.
         idempotency.setPaymentReference(savedPayment.getPaymentReference());
 
         idempotency.setStatus(PaymentStatus.PENDING);
 
         paymentIdempotencyRepository.save(idempotency);
 
-        /*
-         * Create Saga.
-         */
+
+        // Create Saga.
         PaymentSaga saga = PaymentSaga.builder()
                 .paymentReference(savedPayment.getPaymentReference())
                 .payerWalletId(savedPayment.getPayerWalletId())
@@ -215,7 +208,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (payments.getStatus() != PaymentStatus.SUCCESS) {
             throw new IllegalStateException("Only successful payments can be refunded");
         }
-        transactionClient.reverseTransaction(payments.getTransactionReference());
+        transactionServiceClient.reverseTransaction(payments.getTransactionReference());
 
         payments.setStatus(PaymentStatus.REFUNDED);
         payments.setMessage("Payment refunded successfully");
