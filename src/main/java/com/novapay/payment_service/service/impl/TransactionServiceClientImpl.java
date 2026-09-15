@@ -6,6 +6,7 @@ import com.novapay.payment_service.dto.response.TransactionResponse;
 import com.novapay.payment_service.exception.ServiceUnavailableException;
 import com.novapay.payment_service.service.TransactionServiceClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +17,14 @@ public class TransactionServiceClientImpl implements TransactionServiceClient {
     private final TransactionClient transactionClient;
 
     @Override
+    @Retry(name = "transactionService", fallbackMethod = "transferMoneyFallback")
     @CircuitBreaker(name = "transactionService", fallbackMethod = "transferMoneyFallback")
     public TransactionResponse transferMoney(TransactionRequest request) {
         return transactionClient.transferMoney(request);
     }
 
     @Override
+    @Retry(name = "transactionService", fallbackMethod = "reverseTransactionFallback")
     @CircuitBreaker(name = "transactionService", fallbackMethod = "reverseTransactionFallback")
     public TransactionResponse reverseTransaction(String referenceId) {
         return transactionClient.reverseTransaction(referenceId);
