@@ -14,12 +14,7 @@ public class OutboxEventService {
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
-    public void saveEvent(
-            String aggregateType,
-            String aggregateId,
-            String eventType,
-            Object event
-    ) {
+    public void saveEvent(String aggregateType, String aggregateId, String eventType, Object event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
 

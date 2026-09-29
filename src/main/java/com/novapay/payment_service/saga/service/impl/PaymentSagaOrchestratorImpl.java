@@ -15,12 +15,17 @@ import com.novapay.payment_service.saga.event.*;
 import com.novapay.payment_service.saga.repository.PaymentSagaRepository;
 import com.novapay.payment_service.saga.service.PaymentSagaOrchestrator;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
 public class PaymentSagaOrchestratorImpl implements PaymentSagaOrchestrator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentSagaOrchestratorImpl.class);
 
     private final PaymentSagaRepository paymentSagaRepository;
     private final SagaCommandProducer sagaCommandProducer;
@@ -84,6 +89,9 @@ public class PaymentSagaOrchestratorImpl implements PaymentSagaOrchestrator {
                 .orElseThrow(() -> new IllegalStateException(
                         "Payment not found for payment reference: "
                                 + event.paymentReference()));
+        LOGGER.info("TransactionCreatedEvent received | paymentReference={} | transactionReference={}",
+                event.paymentReference(),
+                event.transactionReference());
 
         // Update Payment
         payment.setStatus(PaymentStatus.SUCCESS);
@@ -91,6 +99,12 @@ public class PaymentSagaOrchestratorImpl implements PaymentSagaOrchestrator {
         payment.setMessage("Payment processed successfully");
 
         Payment savedPayment = paymentRepository.save(payment);
+
+        LOGGER.info("Payment updated with transaction reference | paymentReference={} | transactionReference={} | status={}",
+                savedPayment.getPaymentReference(),
+                savedPayment.getTransactionReference(),
+                savedPayment.getStatus()
+        );
 
         // Update Idempotency
         PaymentIdempotency idempotency =

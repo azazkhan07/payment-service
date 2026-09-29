@@ -34,7 +34,13 @@ public class Payment {
     private PaymentStatus status;
     private String remarks;
     private String message;
+    @Column(name = "gateway_order_id", length = 100)
+    private String gatewayOrderId;
+    @Column(name = "gateway_payment_id", length = 100)
+    private String gatewayPaymentId;
     private String transactionReference;
+    @Column(name = "gateway_refund_id", length = 100)
+    private String gatewayRefundId;
     private LocalDateTime createdAt;
     @PrePersist
     public void prePersist() {

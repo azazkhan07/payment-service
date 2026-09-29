@@ -10,11 +10,16 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
+
 @RequiredArgsConstructor
 public class TransactionServiceClientImpl implements TransactionServiceClient {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionServiceClientImpl.class);
 
     private final TransactionClient transactionClient;
 
@@ -37,10 +42,19 @@ public class TransactionServiceClientImpl implements TransactionServiceClient {
     }
 
     public TransactionResponse transferMoneyFallback(TransactionRequest request, Throwable throwable) {
+
+        LOGGER.error("Transaction Service transfer failed | error={}", throwable.getMessage(), throwable);
+        
         throw new ServiceUnavailableException("Transaction Service is currently unavailable");
     }
 
     public TransactionResponse reverseTransactionFallback(String referenceId, Throwable throwable) {
+
+        LOGGER.error("Transaction Service reverse failed | referenceId={} | error={}",
+                referenceId,
+                throwable.getMessage(),
+                throwable);
+
         throw new ServiceUnavailableException("Transaction Service is currently unavailable");
     }
 }
