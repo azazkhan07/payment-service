@@ -2,7 +2,7 @@ spring:
   application:
     name: payment-service
   config:
-    import: "configserver:http://localhost:8089/"
+    import: "configserver:${CONFIG_SERVER_URL:http://localhost:8089/}"
 management:
   endpoints:
     web:
